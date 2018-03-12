@@ -1,0 +1,214 @@
+{% load staticfiles %}
+{# 使用自定义模板标签时，需要导入您编写的自定义模板模块 #}
+{% load blog_tags %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Black &amp; White</title>
+
+    <!-- meta -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- css -->
+{#    <link rel="stylesheet" href="css/bootstrap.min.css">#}
+    <link rel="stylesheet" href="{% static 'blog/css/bootstrap.min.css' %}">
+{#    这里引用的是外部标签，所以我们没有使用{%  %}模板标签 #}
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+{#    <link rel="stylesheet" href="css/pace.css">#}
+{#    <link rel="stylesheet" href="css/custom.css">#}
+    <link rel="stylesheet" href="{% static 'blog/css/pace.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/css/highlights/github.css' %}">
+
+    <!-- js -->
+{#    <script src="js/jquery-2.1.3.min.js"></script>#}
+{#    <script src="js/bootstrap.min.js"></script>#}
+{#    <script src="js/pace.min.js"></script>#}
+{#    <script src="js/modernizr.custom.js"></script>#}
+    <script src="{% static 'blog/js/jquery-2.1.3.min.js' %}"></script>
+    <script src="{% static 'blog/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'blog/js/pace.min.js' %}"></script>
+    <script src="{% static 'blog/js/modernizr.custom.js' %}"></script>
+</head>
+
+<body>
+<div class="container">
+    <header id="site-header">
+        <div class="row">
+            <div class="col-md-4 col-sm-5 col-xs-8">
+                <div class="logo">
+{#                    <h1><a href="index.html"><b>Black</b> &amp; White</a></h1>#}
+                    <h1><a href="{% url 'hoBlog:index' %}"><b>Black</b> &amp; White </a></h1>
+                </div>
+            </div><!-- col-md-4 -->
+            <div class="col-md-8 col-sm-7 col-xs-4">
+                <nav class="main-nav" role="navigation">
+                    <div class="navbar-header">
+                        <button type="button" id="trigger-overlay" class="navbar-toggle">
+                            <span class="ion-navicon"></span>
+                        </button>
+                    </div>
+
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="cl-effect-11"><a href="{% url 'hoBlog:index' %}" data-hover="首页">首页</a></li>
+                            <li class="cl-effect-11"><a href="full-width.html" data-hover="博客">博客</a></li>
+                            <li class="cl-effect-11"><a href="about.html" data-hover="关于">关于</a></li>
+                            <li class="cl-effect-11"><a href="contact.html" data-hover="联系">联系</a></li>
+                        </ul>
+                    </div><!-- /.navbar-collapse -->
+                </nav>
+                <div id="header-search-box">
+                    <a id="search-menu" href="#"><span id="search-icon" class="ion-ios-search-strong"></span></a>
+                    <div id="search-form" class="search-form">
+                        <form role="search" method="get" id="searchform" action="#">
+                            <input type="search" placeholder="搜索" required>
+                            <button type="submit"><span class="ion-ios-search-strong"></span></button>
+                        </form>
+                    </div>
+                </div>
+            </div><!-- col-md-8 -->
+        </div>
+    </header>
+</div>
+<div class="copyrights">Collect from <a href="http://www.cssmoban.com/">网页模板</a></div>
+<div class="copyrights">Modified by <a href="http://zmrenwu.com/">追梦人物的博客</a></div>
+
+<div class="content-body">
+    <div class="container">
+        <div class="row">
+            <main class="col-md-8">
+                {% block main %}
+                {% endblock main %}
+            </main>
+            <aside class="col-md-4">
+                {% block toc %}
+                {% endblock toc %}
+
+            <div class="widget widget-recent-posts">
+                <h3 class="widget-title">最新文章</h3>
+                    {# 通过使用 get_recent_posts 模板标签获取最新文章列表，然后通过 as【django模板系统的语法】 语法将获取的文章列表保存进了 recent_post_list 模板变量中，之后用for循环来循环显示文章列表数据           #}
+                    {% get_recent_posts as recent_post_list %}
+                <ul>
+                    {% for post in recent_post_list %}
+                    <li>
+                        <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+                    </li>
+                    {% empty %}
+                        暂无文章～
+                    {% endfor %}
+                </ul>
+                </div>
+                <div class="widget widget-archives">
+                    <h3 class="widget-title">归档</h3>
+                    {# 调用 archives 模板标签自动获取一个已发表文章的日期列表，精确到月份，降序排列，然后通过 as 语法将其保存在 date_list里              #}
+                    {% archives as date_list %}
+                    <ul>
+                        {% for date in date_list %}
+                        <li>
+                            {# 由于日期列表中的元素为 Python 的 date 对象，因此可以通过 year 和 month 属性分别获取年和月的信息                       #}
+                            {# 这里的{% url %}模板标签的作用是解析视图函数 hoBlog:archives 对应的URL模式，并把URL模式中的年和月替换成 date.year, date.month 的值                           #}
+                            {# 例如:hoBlog:archives表示hoBlog应用下的archives函数，这个函数对应的URL模式为 ^archives/(?P<year>[0-9]{4})/(?P<month>[0-9]{1,2})/$，假设 date.year=2017，date.month=5，那么 {% url 'blog:archives' date.year date.month %} 模板标签返回的值为 /archives/2017/5                         #}
+                            <a href="{% url 'hoBlog:archives' date.year date.month %}">
+                                {{ date.year }} 年 {{ date.month }} 月
+                            </a>
+                        </li>
+                        {% empty %}
+                            暂无归档～
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="widget widget-category">
+                    <h3 class="widget-title">分类</h3>
+                    {% get_categories as category_list %}
+                    <ul>
+                        {% for category in category_list %}
+                            <li>
+                                {# <span class="post-count">(13)</span>显示的是该分类下的文章数目                           #}
+                                <a href="{% url 'hoBlog:category' category.pk %}">{{ category.name }} <span class="post-count">(13)</span></a>
+                            </li>
+                        {% empty %}
+                            暂无分类～
+                        {% endfor %}
+
+                    </ul>
+                </div>
+
+                <div class="widget widget-tag-cloud">
+                    <h3 class="widget-title">标签云</h3>
+                    <ul>
+                        <li>
+                            <a href="#">Django</a>
+                        </li>
+                        <li>
+                            <a href="#">Python</a>
+                        </li>
+                        <li>
+                            <a href="#">Java</a>
+                        </li>
+                        <li>
+                            <a href="#">笔记</a>
+                        </li>
+                        <li>
+                            <a href="#">文档</a>
+                        </li>
+                        <li>
+                            <a href="#">AngularJS</a>
+                        </li>
+                        <li>
+                            <a href="#">CSS</a>
+                        </li>
+                        <li>
+                            <a href="#">JavaScript</a>
+                        </li>
+                        <li>
+                            <a href="#">Snippet</a>
+                        </li>
+                        <li>
+                            <a href="#">jQuery</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="rss">
+                    <a href=""><span class="ion-social-rss-outline"></span> RSS 订阅</a>
+                </div>
+
+            </aside>
+        </div>
+    </div>
+</div>
+<footer id="site-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <p class="copyright">&copy 2017 - 采集自<a href="http://www.cssmoban.com/"
+                                                        target="_blank" title="模板之家">模板之家</a>
+                    - 由<a href="http://zmrenwu.com/" title="网页模板" target="_blank">追梦人物的博客</a>修改
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Mobile Menu -->
+<div class="overlay overlay-hugeinc">
+    <button type="button" class="overlay-close"><span class="ion-ios-close-empty"></span></button>
+    <nav>
+        <ul>
+            <li><a href="index.html">首页</a></li>
+            <li><a href="full-width.html">博客</a></li>
+            <li><a href="about.html">关于</a></li>
+            <li><a href="contact.html">联系</a></li>
+        </ul>
+    </nav>
+</div>
+
+{#<script src="js/script.js"></script>#}
+<script src="{% static 'blog/js/script.js' %}"></script>
+{# 模版标签：{%  %},用来引用路径，有点类似于函数   模版变量{{ }}，主要是作用是在最终渲染的模版里显示由试图函数传过来的变量值 #}
+
+</body>
+</html>
