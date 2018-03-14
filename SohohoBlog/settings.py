@@ -25,12 +25,14 @@ SECRET_KEY = 'v=74&em7cj@)5(la*tlv%y*bzq$#-c!!e2ogjpkfne@6f=c!o('
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
+DEBUG = True
 
-# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []
+
 # 为了安全起见，在生产环境下需要关闭 DEBUG 选项以及设置允许访问的域名，修改上门两项的值为：
-DEBUG = False
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.sohoho.xim']
+# DEBUG = False
+# ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.sohoho.xim']
 #ALLOWED_HOSTS是允许访问的域名列表，'127.0.0.1', 'localhost' 是本地访问的域名，'.sohoho.xim' 是访问服务器的域名，
 # 域名前加个点表示允许访问该域名下的子域名，比如 www.sohoho.xim、test.sohoho.xin等二级域名同样允许访问，如果不加前面的点则只允许访问sohoho.xim
 

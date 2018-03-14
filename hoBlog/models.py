@@ -5,6 +5,9 @@ from django.core.urlresolvers import reverse
 
 from django.utils.six import python_2_unicode_compatible
 
+import markdown
+from django.utils.html import strip_tags
+
 
 
 # 分类数据库表
@@ -50,6 +53,10 @@ class Post(models.Model):
     # 因为我们规定一篇文章只能有一个作者，而一个作者可能会有多篇文章，因此这是一个一对多的关联关系
     author = models.ForeignKey(User)
 
+    # 新增Views字段记录阅读量,PositiveIntegerField表示该值的类型只允许为正整数或0
+    views = models.PositiveIntegerField(default=0)
+
+
     def __str__(self):
         return self.title
 
@@ -64,6 +71,31 @@ class Post(models.Model):
     # 这样 Post 自己就生成了自己的 URL。
     def get_absolute_url(self):
         return reverse('hoBlog:detail', kwargs={'pk': self.pk})
+
+    # 一旦用户访问了某篇文章，这时就应该将 views 的值 +1，这个过程最好由 Post 模型自己来完成，
+    # 因此再给模型添加一个自定义的方法：
+    def increase_views(self):
+        self.views += 1 #首先将自身对应的 views 字段的值 +1
+        # 然后调用 save 方法将更改后的值保存到数据库，
+        # 这里使用了 update_fields 参数来告诉 Django 只更新数据库中 views 字段的值，以提高效率
+        self.save(update_fields=['views'])
+
+    # 截取摘要
+    def save(self, *args, **kwargs):
+        #如果没有填写摘要
+        if not self.excerpt:
+            # 首先实例化一个 Markdown 类，用于渲染 body 的文本
+            md = markdown.Markdown(extensions=[
+                'markdown.extensions.extra',
+                'markdown.extensions.codehilite',
+            ])
+            # 先将 Markdown 文本渲染成 HTML 文本
+            # strip_tags 去掉 HTML 文本的全部 HTML 标签
+            # 从文本摘要取前 54 个字符赋值给 excerpt
+            self.excerpt = strip_tags(md.convert(self.body))[:54]
+        
+        # 调用父类的 save 方法将数据保存到数据库中
+        super(Post, self).save(*args, **kwargs)
 
     # 为了让文章Post 按发布时间逆序排列，哥哥视图函数中都有类似于 Post.objects.all().order_by('-create_time) 这样的代码，这导致了很多重复
     # 因为只要是返回的文章列表，基本都是逆序排列的，因此我们可以在 Post 模型中指定 Post 的自然排序方式
